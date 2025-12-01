@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目团队介绍</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://dl.aipyaipy.com/downloads/js/echarts-5.5.0.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        accent: '#722ED1',
+                        dark: '#1D2129',
+                        light: '#F2F3F5',
+                        danger: '#FF5252'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .glass {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+            .glass-dark {
+                background: rgba(17, 25, 40, 0.75);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+            }
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+            }
+            .bg-grid {
+                background-size: 40px 40px;
+                background-image: 
+                    linear-gradient(to right, rgba(22, 93, 255, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(22, 93, 255, 0.05) 1px, transparent 1px);
+            }
+            .editable {
+                position: relative;
+                cursor: text;
+                transition: all 0.3s ease;
+            }
+            .editable:hover {
+                background-color: rgba(22, 93, 255, 0.05);
+                border-radius: 4px;
+            }
+            .editable:focus {
+                outline: 2px solid rgba(22, 93, 255, 0.3);
+                background-color: rgba(22, 93, 255, 0.08);
+                border-radius: 4px;
+            }
+            .edit-mode .editable {
+                border: 1px dashed rgba(22, 93, 255, 0.3);
+                padding: 2px 4px;
+                border-radius: 4px;
+            }
+            .edit-mode .editable:hover {
+                border-color: rgba(22, 93, 255, 0.6);
+            }
+            .edit-mode .editable:focus {
+                border-color: rgba(22, 93, 255, 0.9);
+            }
+            .edit-btn {
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                z-index: 100;
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                transition: all 0.3s ease;
+            }
+            .edit-btn:hover {
+                transform: scale(1.1);
+                box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+            }
+            .save-notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 1000;
+                transform: translateX(400px);
+                transition: transform 0.3s ease;
+            }
+            .save-notification.show {
+                transform: translateX(0);
+            }
+            .avatar-upload {
+                position: absolute;
+                bottom: -16px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background-color: rgba(255, 255, 255, 0.9);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 2px solid white;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                cursor: pointer;
+                opacity: 0;
+                transition: all 0.3s ease;
+                z-index: 10;
+            }
+            .member-card:hover .avatar-upload {
+                opacity: 1;
+                bottom: -10px;
+            }
+            .member-card .delete-btn {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                background-color: rgba(255, 82, 82, 0.8);
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                opacity: 0;
+                transition: all 0.3s ease;
+                z-index: 10;
+            }
+            .edit-mode .member-card:hover .delete-btn {
+                opacity: 1;
+            }
+            .modal-backdrop {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(5px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+            }
+            .modal-backdrop.show {
+                opacity: 1;
+                visibility: visible;
+            }
+            .modal {
+                background-color: white;
+                border-radius: 12px;
+                width: 90%;
+                max-width: 500px;
+                padding: 24px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                transform: translateY(-20px);
+                transition: all 0.3s ease;
+            }
+            .modal-backdrop.show .modal {
+                transform: translateY(0);
+            }
+            .undo-notification {
+                position: fixed;
+                bottom: 30px;
+                left: 30px;
+                z-index: 100;
+                transform: translateY(100px);
+                transition: transform 0.3s ease;
+            }
+            .undo-notification.show {
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-light bg-grid min-h-screen font-sans text-dark">
+    <!-- 编辑模式通知 -->
+    <div id="saveNotification" class="save-notification glass-dark text-white px-6 py-3 rounded-lg shadow-lg">
+        <div class="flex items-center space-x-3">
+            <i class="fa fa-check-circle text-green-400 text-xl"></i>
+            <span>内容已保存</span>
+        </div>
+    </div>
+
+    <!-- 撤销删除通知 -->
+    <div id="undoNotification" class="undo-notification glass px-6 py-3 rounded-lg shadow-lg">
+        <div class="flex items-center space-x-3">
+            <i class="fa fa-info-circle text-primary text-xl"></i>
+            <span>成员已删除</span>
+            <button id="undoDeleteBtn" class="text-primary font-medium hover:underline">撤销</button>
+        </div>
+    </div>
+
+    <!-- 删除确认对话框 -->
+    <div id="deleteModal" class="modal-backdrop">
+        <div class="modal rounded-2xl">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-danger/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa fa-exclamation-triangle text-danger text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">确认删除成员</h3>
+                <p class="text-dark/70" id="deleteMemberName">确定要删除"张明"吗？此操作无法撤销。</p>
+            </div>
+            <div class="flex gap-4">
+                <button id="cancelDeleteBtn" class="flex-1 py-3 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">取消</button>
+                <button id="confirmDeleteBtn" class="flex-1 py-3 px-4 bg-danger text-white rounded-lg hover:bg-danger/90 transition-colors">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 头像上传预览对话框 -->
+    <div id="avatarModal" class="modal-backdrop">
+        <div class="modal rounded-2xl">
+            <h3 class="text-xl font-bold mb-4">预览头像</h3>
+            <div class="flex justify-center mb-6">
+                <div class="w-40 h-40 rounded-full overflow-hidden border-4 border-gray-100 shadow-md">
+                    <img id="avatarPreview" src="" alt="头像预览" class="w-full h-full object-cover">
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <button id="cancelAvatarBtn" class="flex-1 py-3 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">取消</button>
+                <button id="confirmAvatarBtn" class="flex-1 py-3 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">使用此头像</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav class="fixed w-full z-50 transition-all duration-300" id="navbar">
+        <div class="glass-dark text-white px-6 py-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fa fa-cubes text-secondary text-2xl"></i>
+                    <span class="text-xl font-bold">TechTeam</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#vision" class="hover:text-secondary transition-colors">团队愿景</a>
+                    <a href="#members" class="hover:text-secondary transition-colors">成员介绍</a>
+                    <a href="#rules" class="hover:text-secondary transition-colors">内部规则</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="editModeBtn" class="bg-secondary/20 hover:bg-secondary/30 px-4 py-2 rounded-full flex items-center space-x-2 transition-colors">
+                        <i class="fa fa-edit"></i>
+                        <span class="hidden md:inline">编辑模式</span>
+                    </button>
+                    <button class="md:hidden text-white focus:outline-none" id="menuBtn">
+                        <i class="fa fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- 移动端菜单 -->
+        <div class="md:hidden hidden glass-dark text-white absolute w-full" id="mobileMenu">
+            <div class="container mx-auto px-6 py-4 flex flex-col space-y-4">
+                <a href="#vision" class="hover:text-secondary transition-colors py-2">团队愿景</a>
+                <a href="#members" class="hover:text-secondary transition-colors py-2">成员介绍</a>
+                <a href="#rules" class="hover:text-secondary transition-colors py-2">内部规则</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <header class="pt-32 pb-20 md:pt-40 md:pb-32 px-6 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 -z-10"></div>
+        <div class="container mx-auto text-center">
+            <h1 class="text-[clamp(2.5rem,8vw,4rem)] font-bold leading-tight mb-6">
+                <span class="bg-gradient-to-r from-primary to-accent text-gradient">创新科技</span>
+                <br>卓越团队
+            </h1>
+            <p class="text-[clamp(1.2rem,4vw,1.8rem)] text-dark/70 max-w-3xl mx-auto mb-10 editable" id="teamSlogan" contenteditable="false">
+                用代码改变世界，以协作创造未来
+            </p>
+            <div class="inline-block glass px-8 py-3 rounded-full shadow-lg">
+                <a href="#members" class="flex items-center space-x-2 text-primary font-medium hover:text-accent transition-colors">
+                    <span>认识我们的团队</span>
+                    <i class="fa fa-arrow-down animate-bounce"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 团队愿景 -->
+    <section id="vision" class="py-20 px-6 bg-white">
+        <div class="container mx-auto max-w-5xl">
+            <div class="glass rounded-2xl p-8 md:p-12 shadow-xl">
+                <div class="flex flex-col md:flex-row items-center gap-10">
+                    <div class="md:w-1/2">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-6 text-primary editable" id="visionTitle" contenteditable="false">团队愿景</h2>
+                        <p class="text-lg text-dark/80 mb-6 leading-relaxed editable" id="visionText1" contenteditable="false">
+                            我们致力于成为行业内最具创新力的技术团队，通过持续学习和协作，打造卓越的产品和解决方案。
+                        </p>
+                        <p class="text-lg text-dark/80 mb-6 leading-relaxed editable" id="visionText2" contenteditable="false">
+                            我们相信技术的力量能够解决现实世界的问题，因此我们不断探索前沿技术，挑战自我极限，追求技术与艺术的完美结合。
+                        </p>
+                        <div class="flex flex-wrap gap-4 mt-8">
+                            <div class="flex items-center space-x-2 bg-primary/10 px-4 py-2 rounded-full">
+                                <i class="fa fa-lightbulb-o text-primary"></i>
+                                <span class="editable" id="value1" contenteditable="false">创新思维</span>
+                            </div>
+                            <div class="flex items-center space-x-2 bg-secondary/10 px-4 py-2 rounded-full">
+                                <i class="fa fa-users text-secondary"></i>
+                                <span class="editable" id="value2" contenteditable="false">协作共赢</span>
+                            </div>
+                            <div class="flex items-center space-x-2 bg-accent/10 px-4 py-2 rounded-full">
+                                <i class="fa fa-rocket text-accent"></i>
+                                <span class="editable" id="value3" contenteditable="false">追求卓越</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 w-full h-80">
+                        <div id="visionChart" class="w-full h-full"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 成员介绍 -->
+    <section id="members" class="py-20 px-6 bg-gradient-to-b from-white to-primary/5">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center text-primary editable" id="membersTitle" contenteditable="false">项目成员</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="membersContainer">
+                <!-- 成员1 -->
+                <div class="glass rounded-xl overflow-hidden shadow-lg transition-transform hover:scale-105 duration-300 member-card relative">
+                    <div class="h-48 bg-gradient-to-r from-primary to-accent relative">
+                        <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2 w-32 h-32 rounded-full border-4 border-white overflow-hidden">
+                            <img src="https://picsum.photos/id/1005/200/200" alt="成员头像" class="w-full h-full object-cover member-avatar">
+                        </div>
+                        <div class="avatar-upload">
+                            <i class="fa fa-camera text-primary"></i>
+                            <input type="file" class="avatar-input absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*">
+                        </div>
+                        <div class="delete-btn">
+                            <i class="fa fa-times"></i>
+                        </div>
+                    </div>
+                    <div class="pt-20 pb-6 px-6 text-center">
+                        <h3 class="text-xl font-bold mb-1 editable member-name" contenteditable="false">张明</h3>
+                        <p class="text-primary font-medium mb-4 editable member-position" contenteditable="false">技术负责人</p>
+                        <p class="text-dark/70 mb-6 editable member-desc" contenteditable="false">拥有10年全栈开发经验，擅长架构设计和技术难题攻克，曾主导多个大型项目的开发。</p>
+                        <div class="flex justify-center space-x-4">
+                            <a href="#" class="text-dark/50 hover:text-primary transition-colors member-link-github"><i class="fa fa-github"></i></a>
+                            <a href="#" class="text-dark/50 hover:text-primary transition-colors member-link-linkedin"><i class="fa fa-linkedin"></i></a>
+                            <a href="#" class="text-dark/50 hover:text-primary transition-colors member-link-email"><i class="fa fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 成员2 -->
+                <div class="glass rounded-xl overflow-hidden shadow-lg transition-transform hover:scale-105 duration-300 member-card relative">
+                    <div class="h-48 bg-gradient-to-r from-secondary to-primary relative">
+                        <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2 w-32 h-32 rounded-full border-4 border-white overflow-hidden">
+                            <img src="https://picsum.photos/id/1011/200/200" alt="成员头像" class="w-full h-full object-cover member-avatar">
+                        </div>
+                        <div class="avatar-upload">
+                            <i class="fa fa-camera text-primary"></i>
+                            <input type="file" class="avatar-input absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*">
+                        </div>
+                        <div class="delete-btn">
+                            <i class="fa fa-times"></i>
+                        </div>
+                    </div>
+                    <div class="pt-20 pb-6 px-6 text-center">
+                        <h3 class="text-xl font-bold mb-1 editable member-name" contenteditable="false">李华</h3>
+                        <p class="text-secondary font-medium mb-4 editable member-position" contenteditable="false">前端开发工程师</p>
+                        <p class="text-dark/70 mb-6 editable member-desc" contenteditable="false">精通现代前端技术栈，热衷于用户体验和界面设计，能够将复杂需求转化为优雅的交互界面。</p>
+                        <div class="flex justify-center space-x-4">
+                            <a href="#" class="text-dark/50 hover:text-secondary transition-colors member-link-github"><i class="fa fa-github"></i></a>
+                            <a href="#" class="text-dark/50 hover:text-secondary transition-colors member-link-linkedin"><i class="fa fa-linkedin"></i></a>
+                            <a href="#" class="text-dark/50 hover:text-secondary transition-colors member-link-email"><i class="fa fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 成员3 -->
+                <div class="glass rounded-xl overflow-hidden shadow-lg transition-transform hover:scale-105 duration-300 member-card relative">
+                    <div class="h-48 bg-gradient-to-r from-accent to-secondary relative">
+                        <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2 w-32 h-32 rounded-full border-4 border-white overflow-hidden">
+                            <img src="https://picsum.photos/id/1025/200/200" alt="成员头像" class="w-full h-full object-cover member-avatar">
+                        </div>
+                        <div class="avatar-upload">
+                            <i class="fa fa-camera text-primary"></i>
+                            <input type="file" class="avatar-input absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*">
+                        </div>
+                        <div class="delete-btn">
+                            <i class="fa fa-times"></i>
+                        </div>
+                    </div>
+                    <div class="pt-20 pb-6 px-6 text-center">
+                        <h3 class="text-xl font-bold mb-1 editable member-name" contenteditable="false">王芳</h3>
+                        <p class="text-accent font-medium mb-4 editable member-position" contenteditable="false">后端开发工程师</p>
+                        <p class="text-dark/70 mb-6 editable member-desc" contenteditable="false">专注于构建高性能、可扩展的后端系统，对数据安全和系统优化有深入研究和实践经验。</p>
+                        <div class="flex justify-center space-x-4">
+                            <a href="#" class="text-dark/50 hover:text-accent transition-colors member-link-github"><i class="fa fa-github"></i></a>
+                            <a href="#" class="text-dark/50 hover:text-accent transition-colors member-link-linkedin"><i class="fa fa-linkedin"></i></a>
+                            <a href="#" class="text-dark/50 hover:text-accent transition-colors member-link-email"><i class="fa fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 成员4 -->
+                <div class="glass rounded-xl overflow-hidden shadow-lg transition-transform hover:scale-105 duration-300 member-card relative">
+                    <div class="h-48 bg-gradient-to-r from-primary to-secondary relative">
+                        <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2 w-32 h-32 rounded-full border-4 border-white overflow-hidden">
+                            <img src="https://picsum.photos/id/1074/200/200" alt="成员头像" class="w-full h-full object-cover member-avatar">
+                        </div>
+                        <div class="avatar-upload">
+                            <i class="fa fa-camera text-primary"></i>
+                            <input type="file" class="avatar-input absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*">
+                        </div>
+                        <div class="delete-btn">
+                            <i class="fa fa-times"></i>
+                        </div>
+                    </div>
+                    <div class="pt-20 pb-6 px-6 text-center">
+                        <h3 class="text-xl font-bold mb-1 editable member-name" contenteditable="false">赵伟</h3>
+                        <p class="text-primary font-medium mb-4 editable member-position" contenteditable="false">UI/UX设计师</p>
+                        <p class="text-dark/70 mb-6 editable member-desc" contenteditable="false">擅长用户体验设计和交互设计，能够平衡美学与功能性，创造令人愉悦的产品体验。</p>
+                        <div class="flex justify-center space-x-4">
+                            <a href="#" class="text-dark/50 hover:text-primary transition-colors member-link-dribbble"><i class="fa fa-dribbble"></i></a>
+                            <a href="#" class="text-dark/50 hover:text-primary transition-colors member-link-behance"><i class="fa fa-behance"></i></a>
+                            <a href="#" class="text-dark/50 hover:text-primary transition-colors member-link-email"><i class="fa fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 成员5 -->
+                <div class="glass rounded-xl overflow-hidden shadow-lg transition-transform hover:scale-105 duration-300 member-card relative">
+                    <div class="h-48 bg-gradient-to-r from-secondary to-accent relative">
+                        <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2 w-32 h-32 rounded-full border-4 border-white overflow-hidden">
+                            <img src="https://picsum.photos/id/1066/200/200" alt="成员头像" class="w-full h-full object-cover member-avatar">
+                        </div>
+                        <div class="avatar-upload">
+                            <i class="fa fa-camera text-primary"></i>
+                            <input type="file" class="avatar-input absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*">
+                        </div>
+                        <div class="delete-btn">
+                            <i class="fa fa-times"></i>
+                        </div>
+                    </div>
+                    <div class="pt-20 pb-6 px-6 text-center">
+                        <h3 class="text-xl font-bold mb-1 editable member-name" contenteditable="false">陈静</h3>
+                        <p class="text-secondary font-medium mb-4 editable member-position" contenteditable="false">产品经理</p>
+                        <p class="text-dark/70 mb-6 editable member-desc" contenteditable="false">具有敏锐的市场洞察力和产品思维，擅长需求分析和产品规划，连接技术与业务的桥梁。</p>
+                        <div class="flex justify-center space-x-4">
+                            <a href="#" class="text-dark/50 hover:text-secondary transition-colors member-link-product-hunt"><i class="fa fa-product-hunt"></i></a>
+                            <a href="#" class="text-dark/50 hover:text-secondary transition-colors member-link-linkedin"><i class="fa fa-linkedin"></i></a>
+                            <a href="#" class="text-dark/50 hover:text-secondary transition-colors member-link-email"><i class="fa fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 成员6 -->
+                <div class="glass rounded-xl overflow-hidden shadow-lg transition-transform hover:scale-105 duration-300 member-card relative">
+                    <div class="h-48 bg-gradient-to-r from-accent to-primary relative">
+                        <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2 w-32 h-32 rounded-full border-4 border-white overflow-hidden">
+                            <img src="https://picsum.photos/id/1027/200/200" alt="成员头像" class="w-full h-full object-cover member-avatar">
+                        </div>
+                        <div class="avatar-upload">
+                            <i class="fa fa-camera text-primary"></i>
+                            <input type="file" class="avatar-input absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*">
+                        </div>
+                        <div class="delete-btn">
+                            <i class="fa fa-times"></i>
+                        </div>
+                    </div>
+                    <div class="pt-20 pb-6 px-6 text-center">
+                        <h3 class="text-xl font-bold mb-1 editable member-name" contenteditable="false">刘强</h3>
+                        <p class="text-accent font-medium mb-4 editable member-position" contenteditable="false">测试工程师</p>
+                        <p class="text-dark/70 mb-6 editable member-desc" contenteditable="false">专注于保障产品质量，擅长自动化测试和性能测试，确保产品稳定可靠地交付给用户。</p>
+                        <div class="flex justify-center space-x-4">
+                            <a href="#" class="text-dark/50 hover:text-accent transition-colors member-link-bug"><i class="fa fa-bug"></i></a>
+                            <a href="#" class="text-dark/50 hover:text-accent transition-colors member-link-linkedin"><i class="fa fa-linkedin"></i></a>
+                            <a href="#" class="text-dark/50 hover:text-accent transition-colors member-link-email"><i class="fa fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 添加成员按钮（仅在编辑模式下显示） -->
+            <div class="mt-12 text-center edit-mode-hidden">
+                <button id="addMemberBtn" class="glass px-6 py-3 rounded-full flex items-center space-x-2 mx-auto hover:shadow-lg transition-all">
+                    <i class="fa fa-plus text-primary"></i>
+                    <span class="text-primary font-medium">添加新成员</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 内部规则 -->
+    <section id="rules" class="py-20 px-6 bg-white">
+        <div class="container mx-auto max-w-4xl">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-primary editable" id="rulesTitle" contenteditable="false">团队内部规则</h2>
+                <p class="text-dark/70 max-w-2xl mx-auto editable" id="rulesSubtitle" contenteditable="false">共同的规则是团队高效协作的基础，以下是我们团队的核心工作准则</p>
+            </div>
+            
+            <div class="space-y-8" id="rulesContainer">
+                <!-- 规则1 -->
+                <div class="glass rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow rule-card">
+                    <div class="flex items-start gap-6">
+                        <div class="bg-primary/10 p-3 rounded-full text-primary">
+                            <i class="fa fa-code-fork text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-3 text-primary editable rule-title" contenteditable="false">协作规范</h3>
+                            <ul class="space-y-3 text-dark/80 rule-items">
+                                <li class="flex items-start gap-3">
+                                    <i class="fa fa-check-circle text-secondary mt-1"></i>
+                                    <span class="editable" contenteditable="false">使用Git进行版本控制，遵循Feature Branch工作流</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <i class="fa fa-check-circle text-secondary mt-1"></i>
+                                    <span class="editable" contenteditable="false">代码提交前必须通过CI检查和代码评审</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <i class="fa fa-check-circle text-secondary mt-1"></i>
+                                    <span class="editable" contenteditable="false">每日站会同步进度和遇到的问题，时长不超过15分钟</span>
+                                </li>
+                            </ul>
+                            <div class="mt-4 edit-mode-hidden">
+                                <button class="add-rule-item-btn text-sm text-primary hover:text-accent transition-colors">
+                                    <i class="fa fa-plus-circle mr-1"></i>添加规则项
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 规则2 -->
+                <div class="glass rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow rule-card">
+                    <div class="flex items-start gap-6">
+                        <div class="bg-secondary/10 p-3 rounded-full text-secondary">
+                            <i class="fa fa-clock-o text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-3 text-secondary editable rule-title" contenteditable="false">工作时间</h3>
+                            <ul class="space-y-3 text-dark/80 rule-items">
+                                <li class="flex items-start gap-3">
+                                    <i class="fa fa-check-circle text-primary mt-1"></i>
+                                    <span class="editable" contenteditable="false">核心工作时间为10:00-16:00，团队成员需在此时间段保持在线</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <i class="fa fa-check-circle text-primary mt-1"></i>
+                                    <span class="editable" contenteditable="false">实行弹性工作制，每日工作满8小时即可，无需固定上下班时间</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <i class="fa fa-check-circle text-primary mt-1"></i>
+                                    <span class="editable" contenteditable="false">每周五下午进行技术分享和团队建设活动</span>
+                                </li>
+                            </ul>
+                            <div class="mt-4 edit-mode-hidden">
+                                <button class="add-rule-item-btn text-sm text-secondary hover:text-accent transition-colors">
+                                    <i class="fa fa-plus-circle mr-1"></i>添加规则项
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 规则3 -->
+                <div class="glass rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow rule-card">
+                    <div class="flex items-start gap-6">
+                        <div class="bg-accent/10 p-3 rounded-full text-accent">
+                            <i class="fa fa-comments text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-3 text-accent editable rule-title" contenteditable="false">沟通方式</h3>
+                            <ul class="space-y-3 text-dark/80 rule-items">
+                                <li class="flex items-start gap-3">
+                                    <i class="fa fa-check-circle text-primary mt-1"></i>
+                                    <span class="editable" contenteditable="false">即时通讯工具用于快速沟通和紧急事务</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <i class="fa fa-check-circle text-primary mt-1"></i>
+                                    <span class="editable" contenteditable="false">项目相关文档和决策记录在团队知识库中</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <i class="fa fa-check-circle text-primary mt-1"></i>
+                                    <span class="editable" contenteditable="false">复杂问题优先通过面对面或视频会议讨论</span>
+                                </li>
+                            </ul>
+                            <div class="mt-4 edit-mode-hidden">
+                                <button class="add-rule-item-btn text-sm text-accent hover:text-primary transition-colors">
+                                    <i class="fa fa-plus-circle mr-1"></i>添加规则项
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 规则4 -->
+                <div class="glass rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow rule-card">
+                    <div class="flex items-start gap-6">
+                        <div class="bg-primary/10 p-3 rounded-full text-primary">
+                            <i class="fa fa-lightbulb-o text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-3 text-primary editable rule-title" contenteditable="false">创新与学习</h3>
+                            <ul class="space-y-3 text-dark/80 rule-items">
+                                <li class="flex items-start gap-3">
+                                    <i class="fa fa-check-circle text-secondary mt-1"></i>
+                                    <span class="editable" contenteditable="false">每周安排4小时的自主学习时间，探索新技术和工具</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <i class="fa fa-check-circle text-secondary mt-1"></i>
+                                    <span class="editable" contenteditable="false">鼓励尝试新方法解决问题，允许合理范围内的失败</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <i class="fa fa-check-circle text-secondary mt-1"></i>
+                                    <span class="editable" contenteditable="false">每季度进行一次技术调研，评估引入新技术的可能性</span>
+                                </li>
+                            </ul>
+                            <div class="mt-4 edit-mode-hidden">
+                                <button class="add-rule-item-btn text-sm text-primary hover:text-accent transition-colors">
+                                    <i class="fa fa-plus-circle mr-1"></i>添加规则项
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 添加规则按钮（仅在编辑模式下显示） -->
+            <div class="mt-12 text-center edit-mode-hidden">
+                <button id="addRuleBtn" class="glass px-6 py-3 rounded-full flex items-center space-x-2 mx-auto hover:shadow-lg transition-all">
+                    <i class="fa fa-plus text-primary"></i>
+                    <span class="text-primary font-medium">添加新规则</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="py-10 px-6 bg-dark text-white/80">
+        <div class="container mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <i class="fa fa-cubes text-secondary text-xl"></i>
+                        <span class="text-xl font-bold">TechTeam</span>
+                    </div>
+                    <p class="text-white/60 editable" id="footerSlogan" contenteditable="false">用代码改变世界，以协作创造未来</p>
+                </div>
+                <div class="flex space-x-6 mb-6 md:mb-0">
+                    <a href="#" class="text-white/60 hover:text-secondary transition-colors"><i class="fa fa-github text-xl"></i></a>
+                    <a href="#" class="text-white/60 hover:text-secondary transition-colors"><i class="fa fa-twitter text-xl"></i></a>
+                    <a href="#" class="text-white/60 hover:text-secondary transition-colors"><i class="fa fa-linkedin text-xl"></i></a>
+                    <a href="#" class="text-white/60 hover:text-secondary transition-colors"><i class="fa fa-weixin text-xl"></i></a>
+                </div>
+            </div>
+            <div class="border-t border-white/10 mt-8 pt-8 text-center text-white/50 text-sm">
+                Generated by <a href="https://www.aipy.app" class="text-secondary hover:underline">AiPy</a> | 本地数据处理，不上传任何信息
+            </div>
+        </div>
+    </footer>
+
+    <!-- 编辑模式按钮 -->
+    <button id="editToggleBtn" class="edit-btn bg-primary text-white">
+        <i class="fa fa-edit text-2xl"></i>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('py-2');
+                navbar.classList.remove('py-4');
+            } else {
+                navbar.classList.add('py-4');
+                navbar.classList.remove('py-2');
+            }
+        });
+        
+        // 移动端菜单切换
+        document.getElementById('menuBtn').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                // 关闭移动菜单（如果打开）
+                document.getElementById('mobileMenu').classList.add('hidden');
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // 编辑模式功能
+        let isEditMode = false;
+        const editToggleBtn = document.getElementById('editToggleBtn');
+        const editModeBtn = document.getElementById('editModeBtn');
+        const body = document.body;
+        const saveNotification = document.getElementById('saveNotification');
+        let deletedMember = null;
+        let currentAvatarInput = null;
+        
+        // 从本地存储加载数据
+        function loadData() {
+            const savedData = localStorage.getItem('teamPageData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                
+                // 加载团队口号
+                if (data.teamSlogan) {
+                    document.getElementById('teamSlogan').textContent = data.teamSlogan;
+                }
+                
+                // 加载团队愿景
+                if (data.visionTitle) {
+                    document.getElementById('visionTitle').textContent = data.visionTitle;
+                }
+                if (data.visionText1) {
+                    document.getElementById('visionText1').textContent = data.visionText1;
+                }
+                if (data.visionText2) {
+                    document.getElementById('visionText2').textContent = data.visionText2;
+                }
+                if (data.value1) {
+                    document.getElementById('value1').textContent = data.value1;
+                }
+                if (data.value2) {
+                    document.getElementById('value2').textContent = data.value2;
+                }
+                if (data.value3) {
+                    document.getElementById('value3').textContent = data.value3;
+                }
+                
+                // 加载成员信息
+                if (data.membersTitle) {
+                    document.getElementById('membersTitle').textContent = data.membersTitle;
+                }
+                
+                // 加载规则信息
+                if (data.rulesTitle) {
+                    document.getElementById('rulesTitle').textContent = data.rulesTitle;
+                }
+                if (data.rulesSubtitle) {
+                    document.getElementById('rulesSubtitle').textContent = data.rulesSubtitle;
+                }
+                
+                // 加载页脚口号
+                if (data.footerSlogan) {
+                    document.getElementById('footerSlogan').textContent = data.footerSlogan;
+                }
+                
+                // 加载成员数据
+                if (data.members && data.members.length > 0) {
+                    const memberCards = document.querySelectorAll('.member-card');
+                    data.members.forEach((member, index) => {
+                        if (memberCards[index]) {
+                            const card = memberCards[index];
+                            const name = card.querySelector('.member-name');
+                            const position = card.querySelector('.member-position');
+                            const desc = card.querySelector('.member-desc');
+                            const avatar = card.querySelector('.member-avatar');
+                            
+                            if (name && member.name) name.textContent = member.name;
+                            if (position && member.position) position.textContent = member.position;
+                            if (desc && member.desc) desc.textContent = member.desc;
+                            if (avatar && member.avatar) avatar.src = member.avatar;
+                        }
+                    });
+                }
+                
+                // 加载规则数据
+                if (data.rules && data.rules.length > 0) {
+                    const ruleCards = document.querySelectorAll('.rule-card');
+                    data.rules.forEach((rule, ruleIndex) => {
+                        if (ruleCards[ruleIndex]) {
+                            const card = ruleCards[ruleIndex];
+                            const title = card.querySelector('.rule-title');
+                            const items = card.querySelectorAll('.rule-items .editable');
+                            
+                            if (title && rule.title) title.textContent = rule.title;
+                            if (items && rule.items) {
+                                items.forEach((item, itemIndex) => {
+                                    if (rule.items[itemIndex]) {
+                                        item.textContent = rule.items[itemIndex];
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+        }
+        
+        // 保存数据到本地存储
+        function saveData() {
+            const data = {
+                teamSlogan: document.getElementById('teamSlogan').textContent,
+                visionTitle: document.getElementById('visionTitle').textContent,
+                visionText1: document.getElementById('visionText1').textContent,
+                visionText2: document.getElementById('visionText2').textContent,
+                value1: document.getElementById('value1').textContent,
+                value2: document.getElementById('value2').textContent,
+                value3: document.getElementById('value3').textContent,
+                membersTitle: document.getElementById('membersTitle').textContent,
+                rulesTitle: document.getElementById('rulesTitle').textContent,
+                rulesSubtitle: document.getElementById('rulesSubtitle').textContent,
+                footerSlogan: document.getElementById('footerSlogan').textContent,
+                members: [],
+                rules: []
+            };
+            
+            // 收集成员数据
+            const memberCards = document.querySelectorAll('.member-card');
+            memberCards.forEach(card => {
+                const name = card.querySelector('.member-name');
+                const position = card.querySelector('.member-position');
+                const desc = card.querySelector('.member-desc');
+                const avatar = card.querySelector('.member-avatar');
+                
+                data.members.push({
+                    name: name ? name.textContent : '',
+                    position: position ? position.textContent : '',
+                    desc: desc ? desc.textContent : '',
+                    avatar: avatar ? avatar.src : ''
+                });
+            });
+            
+            // 收集规则数据
+            const ruleCards = document.querySelectorAll('.rule-card');
+            ruleCards.forEach(card => {
+                const title = card.querySelector('.rule-title');
+                const items = card.querySelectorAll('.rule-items .editable');
+                const itemsText = [];
+                
+                items.forEach(item => {
+                    itemsText.push(item.textContent);
+                });
+                
+                data.rules.push({
+                    title: title ? title.textContent : '',
+                    items: itemsText
+                });
+            });
+            
+            localStorage.setItem('teamPageData', JSON.stringify(data));
+            
+            // 显示保存成功通知
+            saveNotification.classList.add('show');
+            setTimeout(() => {
+                saveNotification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 切换编辑模式
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            
+            if (isEditMode) {
+                body.classList.add('edit-mode');
+                editToggleBtn.innerHTML = '<i class="fa fa-save text-2xl"></i>';
+                editToggleBtn.classList.remove('bg-primary');
+                editToggleBtn.classList.add('bg-secondary');
+                editModeBtn.innerHTML = '<i class="fa fa-save"></i><span class="hidden md:inline">保存内容</span>';
+                
+                // 启用所有可编辑元素
+                document.querySelectorAll('.editable').forEach(el => {
+                    el.contentEditable = true;
+                });
+                
+                // 显示编辑模式专用的元素
+                document.querySelectorAll('.edit-mode-hidden').forEach(el => {
+                    el.style.display = 'block';
+                });
+            } else {
+                body.classList.remove('edit-mode');
+                editToggleBtn.innerHTML = '<i class="fa fa-edit text-2xl"></i>';
+                editToggleBtn.classList.remove('bg-secondary');
+                editToggleBtn.classList.add('bg-primary');
+                editModeBtn.innerHTML = '<i class="fa fa-edit"></i><span class="hidden md:inline">编辑模式</span>';
+                
+                // 禁用所有可编辑元素
+                document.querySelectorAll('.editable').forEach(el => {
+                    el.contentEditable = false;
+                });
+                
+                // 隐藏编辑模式专用的元素
+                document.querySelectorAll('.edit-mode-hidden').forEach(el => {
+                    el.style.display = 'none';
+                });
+                
+                // 保存数据
+                saveData();
+            }
+        }
+        
+        // 添加新成员
+        function addNewMember() {
+            const membersContainer = document.getElementById('membersContainer');
+            const memberCount = membersContainer.children.length;
+            const randomId = Math.floor(Math.random() * 1000);
+            
+            const newMemberHTML = `
+                <div class="glass rounded-xl overflow-hidden shadow-lg transition-transform hover:scale-105 duration-300 member-card relative">
+                    <div class="h-48 bg-gradient-to-r from-primary to-accent relative">
+                        <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2 w-32 h-32 rounded-full border-4 border-white overflow-hidden">
+                            <img src="https://picsum.photos/id/${randomId}/200/200" alt="成员头像" class="w-full h-full object-cover member-avatar">
+                        </div>
+                        <div class="avatar-upload">
+                            <i class="fa fa-camera text-primary"></i>
+                            <input type="file" class="avatar-input absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*">
+                        </div>
+                        <div class="delete-btn">
+                            <i class="fa fa-times"></i>
+                        </div>
+                    </div>
+                    <div class="pt-20 pb-6 px-6 text-center">
+                        <h3 class="text-xl font-bold mb-1 editable member-name" contenteditable="true">新成员</h3>
+                        <p class="text-primary font-medium mb-4 editable member-position" contenteditable="true">职位</p>
+                        <p class="text-dark/70 mb-6 editable member-desc" contenteditable="true">请输入成员简介...</p>
+                        <div class="flex justify-center space-x-4">
+                            <a href="#" class="text-dark/50 hover:text-primary transition-colors member-link-github"><i class="fa fa-github"></i></a>
+                            <a href="#" class="text-dark/50 hover:text-primary transition-colors member-link-linkedin"><i class="fa fa-linkedin"></i></a>
+                            <a href="#" class="text-dark/50 hover:text-primary transition-colors member-link-email"><i class="fa fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            membersContainer.insertAdjacentHTML('beforeend', newMemberHTML);
+            
+            // 为新添加的成员绑定事件
+            const newMember = membersContainer.lastElementChild;
+            bindMemberEvents(newMember);
+            
+            // 滚动到新添加的成员
+            newMember.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // 聚焦到新成员的姓名输入框
+            setTimeout(() => {
+                const nameInput = newMember.querySelector('.member-name');
+                nameInput.focus();
+                
+                // 选中所有文本
+                const range = document.createRange();
+                range.selectNodeContents(nameInput);
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }, 500);
+            
+            // 保存数据
+            saveData();
+        }
+        
+        // 绑定成员卡片事件
+        function bindMemberEvents(memberCard) {
+            if (!memberCard) return;
+            
+            // 头像上传事件
+            const avatarInput = memberCard.querySelector('.avatar-input');
+            if (avatarInput) {
+                avatarInput.addEventListener('change', handleAvatarUpload);
+            }
+            
+            // 删除按钮事件
+            const deleteBtn = memberCard.querySelector('.delete-btn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', function() {
+                    const memberName = memberCard.querySelector('.member-name').textContent;
+                    document.getElementById('deleteMemberName').textContent = `确定要删除"${memberName}"吗？此操作无法撤销。`;
+                    document.getElementById('deleteModal').classList.add('show');
+                    
+                    // 存储要删除的成员卡片
+                    deletedMember = {
+                        element: memberCard,
+                        index: Array.from(document.querySelectorAll('.member-card')).indexOf(memberCard)
+                    };
+                });
+            }
+        }
+        
+        // 处理头像上传
+        function handleAvatarUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            currentAvatarInput = e.target;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const avatarPreview = document.getElementById('avatarPreview');
+                avatarPreview.src = event.target.result;
+                document.getElementById('avatarModal').classList.add('show');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // 确认更换头像
+        function confirmAvatarChange() {
+            if (currentAvatarInput) {
+                const avatarPreview = document.getElementById('avatarPreview');
+                const avatarImg = currentAvatarInput.closest('.member-card').querySelector('.member-avatar');
+                avatarImg.src = avatarPreview.src;
+                
+                // 关闭模态框
+                document.getElementById('avatarModal').classList.remove('show');
+                
+                // 重置input值，允许重复选择同一张图片
+                currentAvatarInput.value = '';
+                
+                // 保存数据
+                saveData();
+                
+                // 显示保存通知
+                saveNotification.classList.add('show');
+                setTimeout(() => {
+                    saveNotification.classList.remove('show');
+                }, 3000);
+            }
+        }
+        
+        // 删除成员
+        function deleteMember() {
+            if (deletedMember && deletedMember.element) {
+                // 隐藏删除模态框
+                document.getElementById('deleteModal').classList.remove('show');
+                
+                // 从DOM中移除成员卡片
+                deletedMember.element.remove();
+                
+                // 显示撤销通知
+                document.getElementById('undoNotification').classList.add('show');
+                
+                // 5秒后隐藏撤销通知
+                setTimeout(() => {
+                    document.getElementById('undoNotification').classList.remove('show');
+                }, 5000);
+                
+                // 保存数据
+                saveData();
+            }
+        }
+        
+        // 撤销删除成员
+        function undoDeleteMember() {
+            if (deletedMember && deletedMember.element) {
+                const membersContainer = document.getElementById('membersContainer');
+                const memberCards = document.querySelectorAll('.member-card');
+                
+                // 根据索引插入到原来的位置
+                if (deletedMember.index >= memberCards.length) {
+                    membersContainer.appendChild(deletedMember.element);
+                } else {
+                    membersContainer.insertBefore(deletedMember.element, memberCards[deletedMember.index]);
+                }
+                
+                // 隐藏撤销通知
+                document.getElementById('undoNotification').classList.remove('show');
+                
+                // 保存数据
+                saveData();
+                
+                // 清除已删除成员数据
+                deletedMember = null;
+            }
+        }
+        
+        // 添加新规则
+        function addNewRule() {
+            const rulesContainer = document.getElementById('rulesContainer');
+            const ruleCount = rulesContainer.children.length;
+            const colors = ['primary', 'secondary', 'accent'];
+            const icons = ['fa-code-fork', 'fa-clock-o', 'fa-comments', 'fa-lightbulb-o', 'fa-shield', 'fa-users'];
+            const randomColor = colors[ruleCount % colors.length];
+            const randomIcon = icons[ruleCount % icons.length];
+            
+            const newRuleHTML = `
+                <div class="glass rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow rule-card">
+                    <div class="flex items-start gap-6">
+                        <div class="bg-${randomColor}/10 p-3 rounded-full text-${randomColor}">
+                            <i class="fa ${randomIcon} text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-3 text-${randomColor} editable rule-title" contenteditable="true">新规则标题</h3>
+                            <ul class="space-y-3 text-dark/80 rule-items">
+                                <li class="flex items-start gap-3">
+                                    <i class="fa fa-check-circle text-${randomColor} mt-1"></i>
+                                    <span class="editable" contenteditable="true">请输入规则内容...</span>
+                                </li>
+                            </ul>
+                            <div class="mt-4 edit-mode-hidden">
+                                <button class="add-rule-item-btn text-sm text-${randomColor} hover:text-accent transition-colors">
+                                    <i class="fa fa-plus-circle mr-1"></i>添加规则项
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            rulesContainer.insertAdjacentHTML('beforeend', newRuleHTML);
+            
+            // 为新添加的规则项按钮添加事件监听
+            const newRule = rulesContainer.lastElementChild;
+            const addRuleItemBtn = newRule.querySelector('.add-rule-item-btn');
+            if (addRuleItemBtn) {
+                addRuleItemBtn.addEventListener('click', addRuleItem);
+            }
+            
+            // 滚动到新添加的规则
+            newRule.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // 聚焦到新规则的标题输入框
+            setTimeout(() => {
+                const titleInput = newRule.querySelector('.rule-title');
+                titleInput.focus();
+                
+                // 选中所有文本
+                const range = document.createRange();
+                range.selectNodeContents(titleInput);
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }, 500);
+            
+            // 保存数据
+            saveData();
+        }
+        
+        // 添加规则项
+        function addRuleItem(event) {
+            const ruleItems = event.target.closest('.rule-card').querySelector('.rule-items');
+            const ruleColor = event.target.closest('.rule-card').querySelector('.rule-title').classList.contains('text-primary') ? 'primary' : 
+                              event.target.closest('.rule-card').querySelector('.rule-title').classList.contains('text-secondary') ? 'secondary' : 'accent';
+            
+            const newRuleItemHTML = `
+                <li class="flex items-start gap-3">
+                    <i class="fa fa-check-circle text-${ruleColor} mt-1"></i>
+                    <span class="editable" contenteditable="true">请输入规则内容...</span>
+                </li>
+            `;
+            
+            ruleItems.insertAdjacentHTML('beforeend', newRuleItemHTML);
+            
+            // 聚焦到新添加的规则项
+            const newRuleItem = ruleItems.lastElementChild.querySelector('.editable');
+            newRuleItem.focus();
+            
+            // 保存数据
+            saveData();
+        }
+        
+        // 事件监听
+        editToggleBtn.addEventListener('click', toggleEditMode);
+        editModeBtn.addEventListener('click', toggleEditMode);
+        document.getElementById('addMemberBtn').addEventListener('click', addNewMember);
+        document.getElementById('addRuleBtn').addEventListener('click', addNewRule);
+        
+        // 为所有添加规则项按钮添加事件监听
+        document.querySelectorAll('.add-rule-item-btn').forEach(btn => {
+            btn.addEventListener('click', addRuleItem);
+        });
+        
+        // 删除确认对话框事件
+        document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
+            document.getElementById('deleteModal').classList.remove('show');
+        });
+        
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            deleteMember();
+        });
+        
+        // 撤销删除按钮事件
+        document.getElementById('undoDeleteBtn').addEventListener('click', undoDeleteMember);
+        
+        // 头像模态框事件
+        document.getElementById('cancelAvatarBtn').addEventListener('click', function() {
+            document.getElementById('avatarModal').classList.remove('show');
+            currentAvatarInput.value = ''; // 重置input值
+        });
+        
+        document.getElementById('confirmAvatarBtn').addEventListener('click', confirmAvatarChange);
+        
+        // 点击模态框背景关闭模态框
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+            backdrop.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                    if (currentAvatarInput) {
+                        currentAvatarInput.value = ''; // 重置input值
+                    }
+                }
+            });
+        });
+        
+        // 页面加载时加载数据
+        window.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            
+            // 为所有成员卡片绑定事件
+            document.querySelectorAll('.member-card').forEach(memberCard => {
+                bindMemberEvents(memberCard);
+            });
+        });
+        
+        // 团队愿景图表
+        document.addEventListener('DOMContentLoaded', function() {
+            const visionChart = echarts.init(document.getElementById('visionChart'));
+            
+            const option = {
+                backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    top: '5%',
+                    left: 'center',
+                    textStyle: {
+                        color: '#333'
+                    },
+                    itemStyle: {
+                        borderWidth: 2,
+                        borderColor: 'white'
+                    },
+                    itemWidth: 15,
+                    itemHeight: 15,
+                    frameAlpha: 0.7
+                },
+                series: [
+                    {
+                        name: '团队发展方向',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: {
+                            borderRadius: 10,
+                            borderColor: 'white',
+                            borderWidth: 2,
+                            color: function(params) {
+                                const colorList = [
+                                    'rgba(22, 93, 255, 0.7)',
+                                    'rgba(54, 207, 201, 0.7)',
+                                    'rgba(150, 206, 180, 0.7)',
+                                    'rgba(150, 39, 176, 0.7)',
+                                    'rgba(255, 152, 0, 0.7)'
+                                ];
+                                return colorList[params.dataIndex];
+                            }
+                        },
+                        label: {
+                            show: false,
+                            position: 'center'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: 16,
+                                fontWeight: 'bold'
+                            }
+                        },
+                        labelLine: {
+                            show: false
+                        },
+                        data: [
+                            { value: 30, name: '技术创新' },
+                            { value: 25, name: '产品质量' },
+                            { value: 20, name: '用户体验' },
+                            { value: 15, name: '团队成长' },
+                            { value: 10, name: '商业价值' }
+                        ]
+                    }
+                ]
+            };
+            
+            visionChart.setOption(option);
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                visionChart.resize();
+            });
+        });
+    </script>
+</body>
+</html>
